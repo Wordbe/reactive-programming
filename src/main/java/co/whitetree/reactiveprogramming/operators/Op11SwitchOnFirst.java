@@ -4,13 +4,16 @@ import co.whitetree.reactiveprogramming.operators.helper.Person;
 import co.whitetree.reactiveprogramming.util.Util;
 import reactor.core.publisher.Flux;
 
+import java.util.Objects;
 import java.util.function.Function;
 
-public class Op10Transform {
+public class Op11SwitchOnFirst {
     public static void main(String[] args) {
         person()
-                // 여러 publisher 에서 공통된 부분을 처리할 때 유용
-                .transform(applyFilterMap())
+                .switchOnFirst((signal, personFlux) -> {
+                    System.out.println("switch on first");
+                    return signal.isOnNext() && Objects.requireNonNull(signal.get()).getAge() > 10 ? personFlux : applyFilterMap().apply(personFlux);
+                })
                 .subscribe(Util.subscriber());
     }
 
@@ -24,5 +27,4 @@ public class Op10Transform {
                 .doOnNext(person -> person.setName(person.getName().toUpperCase()))
                 .doOnDiscard(Person.class, person -> System.out.println("Not allowing: " + person));
     }
-
 }
